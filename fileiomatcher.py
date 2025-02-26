@@ -97,6 +97,7 @@ def analyze_peaks(device_name, threshold):
                         
                         if filetop_process:
                             filetop_process.terminate()
+                            print(filetop_process.stdout.read())
                             print("\nMost accessed files during peak:")
                             # Sort by total KB (read + write)
                             sorted_stats = sorted(file_stats.items(), 
