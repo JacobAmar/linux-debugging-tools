@@ -41,6 +41,7 @@ def analyze_peaks(device_name, threshold):
                         time_to_peak = (peak_start_time - start_zero_time).total_seconds()
                         print(f"Peak started at {current_time.strftime('%H:%M:%S')}")
                         print(f"Time from zero to peak: {time_to_peak:.2f} seconds")
+                        print("-" * 50)
                 else:  # We're in a peak
                     if reads == 0:
                         in_peak = False
