@@ -21,7 +21,7 @@ def analyze_peaks(device_name, threshold):
         
         if len(fields) > 0 and fields[0] == device_name:
             try:
-                reads = float(fields[3])
+                reads = float(fields[1])
                 print (f"Reads: {reads}")
                 current_time = datetime.now()
                 
