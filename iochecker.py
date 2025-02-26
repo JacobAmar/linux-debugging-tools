@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import sys
-import time
 from datetime import datetime
 
 def analyze_peaks(device_name, threshold):
     threshold = float(threshold)
-    last_peak_time = None
+    waiting_for_zero = True
+    start_zero_time = None
+    peak_start_time = None
     in_peak = False
     
     while True:
@@ -13,34 +14,42 @@ def analyze_peaks(device_name, threshold):
         if not line:
             break
             
-        # Skip empty lines
         if not line.strip():
             continue
             
-        # Split the line into fields
         fields = line.strip().split()
         
-        # Check if this is a device line and if it's our target device
         if len(fields) > 0 and fields[0] == device_name:
-            # r/s is in the 3rd column (index 2)
             try:
                 reads = float(fields[2])
                 current_time = datetime.now()
                 
-                # Check if we've hit a peak
-                if reads >= threshold:
-                    if not in_peak:
+                # Wait for initial zero
+                if waiting_for_zero:
+                    if reads == 0:
+                        waiting_for_zero = False
+                        start_zero_time = current_time
+                        print(f"Found initial zero at {current_time.strftime('%H:%M:%S')}")
+                    continue
+
+                # After finding initial zero
+                if not in_peak:
+                    if reads >= threshold:
                         in_peak = True
-                        if last_peak_time:
-                            time_diff = (current_time - last_peak_time).total_seconds()
-                            print(f"Peak detected at {current_time.strftime('%H:%M:%S')}")
-                            print(f"Time since last peak: {time_diff:.2f} seconds")
-                        else:
-                            print(f"First peak detected at {current_time.strftime('%H:%M:%S')}")
-                        last_peak_time = current_time
-                else:
-                    in_peak = False
-                    
+                        peak_start_time = current_time
+                        time_to_peak = (peak_start_time - start_zero_time).total_seconds()
+                        print(f"Peak started at {current_time.strftime('%H:%M:%S')}")
+                        print(f"Time from zero to peak: {time_to_peak:.2f} seconds")
+                else:  # We're in a peak
+                    if reads == 0:
+                        in_peak = False
+                        time_to_zero = (current_time - peak_start_time).total_seconds()
+                        print(f"Returns to zero at {current_time.strftime('%H:%M:%S')}")
+                        print(f"Time from peak to zero: {time_to_zero:.2f} seconds")
+                        print("-" * 50)
+                        # Reset start_zero_time for next cycle
+                        start_zero_time = current_time
+                        
             except (ValueError, IndexError):
                 continue
 
